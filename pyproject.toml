@@ -1,0 +1,27 @@
+[project]
+name = "translate-movie"
+version = "0.1.0"
+description = "Video translation wrapper that uses Whisper, yt-dlp and LM Studio translator"
+authors = [
+    {name = "mario", email = "mikehopemar@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.0",
+    "python-dotenv>=1.0"
+    ,"pytest>=7.0"
+]
+
+[project.scripts]
+"translate-movie" = "translate_movie:main"
+
+[tool.poetry]
+packages = [
+    { include = "translate_movie", from = "src" }
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

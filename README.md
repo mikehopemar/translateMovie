@@ -62,6 +62,35 @@ Notes
 - The CLI calls external tools (`yt-dlp`, `whisper`, `node`) — ensure they are installed and available in PATH or point the environment variables to their locations.
 - If Whisper or the translator require GPU and you hit resource issues, adjust your environment or model choice.
 
+yt-dlp: selecting quality
+------------------------
+
+You can control the video quality yt-dlp downloads via the `YT_DLP_FORMAT` environment variable (see `.env` / `.env.example`). Useful examples:
+
+- Prefer best available up to 360p (recommended if you want to avoid 720p/4K):
+
+```bash
+YT_DLP_FORMAT="bestvideo[height<=360]+bestaudio/best"
+```
+
+- Require exactly 360p (if not available, yt-dlp will fall back to `best`):
+
+```bash
+YT_DLP_FORMAT="bestvideo[height=360]+bestaudio/best"
+```
+
+- Force mp4 container after merge:
+
+```bash
+# pass --merge-output-format mp4 to yt-dlp (not currently set by default)
+yt-dlp -f "bestvideo[height<=360]+bestaudio/best" 'URL' --merge-output-format mp4
+```
+
+How to override in this project
+
+- Edit `.env` and set `YT_DLP_FORMAT` to any selector you like. The wrapper forwards it to yt-dlp as `-f` when downloading.
+- You can also pass any yt-dlp flags by editing the download command in `src/translate_movie/core.py` if you need fine-grained control.
+
 License
 
 See the `LICENSE` file.

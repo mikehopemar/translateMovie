@@ -42,7 +42,7 @@ def update_ytdlp(yt_dlp_path: str) -> None:
     run_cmd([yt_dlp_path, "--version"])  # show version
 
 
-def download_video(url: str, output_dir: str, yt_dlp_path: str, output_name: str) -> str:
+def download_video(url: str, output_dir: str, yt_dlp_path: str, output_name: str, yt_dlp_format: str) -> str:
     print("=== Downloading video from URL ===", file=sys.stderr)
     debug(f"URL: {url}")
     debug(f"Output directory: {output_dir}")
@@ -59,7 +59,11 @@ def download_video(url: str, output_dir: str, yt_dlp_path: str, output_name: str
                 pass
 
     out_template = os.path.join(output_dir, f"{output_name}.%(ext)s")
-    run_cmd([yt_dlp_path, "-o", out_template, url])
+    cmd = [yt_dlp_path, "-o", out_template]
+    if yt_dlp_format:
+        cmd += ["-f", yt_dlp_format]
+    cmd += [url]
+    run_cmd(cmd)
 
     # pick newest matching file (safe listing + debug on failure)
     try:
@@ -168,6 +172,9 @@ def get_config() -> dict:
         "TARGET_LANG": os.environ.get("TARGET_LANG", "pl"),
         "YT_DLP_PATH": os.environ.get("YT_DLP_PATH", "/usr/local/bin/yt-dlp"),
         "YT_DLP_OUTPUT_NAME": os.environ.get("YT_DLP_OUTPUT_NAME", "ytDownloadedFile"),
+    # default format selects the best video up to 360p (no 720p/4K)
+    # use yt-dlp format selector syntax; this default limits maximum height to 360p
+    "YT_DLP_FORMAT": os.environ.get("YT_DLP_FORMAT", "bestvideo[height<=360]+bestaudio/best"),
         "TRANSLATION_BATCH_SIZES": os.environ.get("TRANSLATION_BATCH_SIZES", "[5,10]"),
     }
 
@@ -277,7 +284,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         DOWNLOAD_DIR = os.path.expanduser(os.path.expandvars("$HOME/Downloads"))
         os.makedirs(DOWNLOAD_DIR, exist_ok=True)
         try:
-            video_file = download_video(args.net, DOWNLOAD_DIR, YT_DLP_PATH, YT_DLP_OUTPUT_NAME)
+            video_file = download_video(args.net, DOWNLOAD_DIR, YT_DLP_PATH, YT_DLP_OUTPUT_NAME, cfg.get("YT_DLP_FORMAT"))
         except Exception as e:
             print(f"Error: Failed to download video: {e}", file=sys.stderr)
             return 3
